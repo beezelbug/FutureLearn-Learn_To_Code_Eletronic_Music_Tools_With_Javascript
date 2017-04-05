@@ -1,0 +1,147 @@
+<html>
+<head>
+<style>
+    #canvas{
+        background:#f4f4f4;
+        height:100%;
+        color:#444444;
+        font-family:arial;
+        margin:20px;
+        padding:50px
+    }
+
+    input[type="button"]{
+        color:#ffffff;
+        font-size:28px;
+        margin:20px;
+        border:1px solid #cccccc;
+        padding:10px;
+        border-radius:3px;
+    }
+    
+    input[type="button"]:disabled{
+        color:#999999;
+        }
+    
+    #start{
+        background-color:#107b13;
+    }
+    
+    #stop{
+        background-color:#e32d28;
+    }
+</style>
+</head>
+<body>
+    <div id = "canvas" tabindex="1"
+        onmousemove="changefrequency(event.clientX,event.clientY)"
+        onkeydown="playNote(event.key)"
+        onkeyup="clearNote()">
+        
+        <h1>Welcome to the first<br>
+        programming exercise</h1>  
+        <ul>
+            <li>Press the Start button to Start</li>
+            <li>Press the Stop button to Stop</li>
+            <li>Move the mouse around to change the sound</li>
+            <li>Keyboard Controls</li>
+            <ul>
+                <li>Z : C4 note</li>
+                <li>X : D4 note</li>
+                <li>C : E4 note </li>
+                <li>V : F4 note</li>
+            </ul>
+            
+            
+        </ul>
+        <br><br><br><br>
+        <div style="border:1px solid #cccccc; padding:20px;margin:auto 10px;width:260px">
+            <input type="button" id="start" value="Start" />
+            <input type="button" disabled id="stop" value="Stop" />
+            <br><br>
+            <span id ="console" style="font-size:36px;text-align:center;color:#e32d28">Synth stopped</span>
+            <br>
+            <span id = "position"></span>
+            <br>
+            <span id ="note" style="font-size:36px;text-align:center;color:#4576a4">&nbsp; &nbsp;</span>
+        </div>
+    </div>
+    
+    
+</body>
+<script>
+    var audio_context = window.AudioContext || window.webkitAudioContext;
+    var con = new audio_context();
+    var osc;
+    var lfo;
+    var lfo_amp;
+    var cons = document.querySelector('#console');
+    var pos = document.querySelector('#position');
+    var note = document.querySelector('#note');
+    var mainCanvas = document.querySelector('#canvas');
+    var btnStart = document.querySelector('#start');
+    var btnStop = document.querySelector('#stop');
+    
+    function changefrequency(mx,my){
+        lfo.frequency.value = mx;
+        osc.frequency.value = my;
+        if(btnStart.disabled){  //don't update the numbers  on display when it's switch off
+            pos.innerHTML=mx + ", " + my;
+        }
+    }
+    
+    function playNote(key){
+        switch (key){
+            case "z" || "Z": osc.frequency.value = 261.63;note.innerHTML="C<sub>4</sub>";break;
+            case "x" || "X": osc.frequency.value = 293.66;note.innerHTML="D<sub>4</sub>";break;
+            case "c" || "C": osc.frequency.value = 329.63;note.innerHTML="E<sub>4</sub>";break;      
+            case "v" || "V": osc.frequency.value = 349.23;note.innerHTML="F<sub>4</sub>";break;
+        }
+    }
+    
+    function clearNote(){
+        note.innerHTML="&nbsp; &nbsp;";
+    }
+    
+    function startIt(){
+        osc = con.createOscillator();
+        lfo = con.createOscillator();
+        
+        lfo_amp = con.createGain();
+        lfo_amp.gain.value = 200;
+        
+        osc.frequency.value = 460;
+        lfo.frequency.value = 159;
+            
+        lfo.connect(lfo_amp);
+        lfo_amp.connect(osc.frequency);
+        osc.connect(con.destination);
+        osc.start();
+        lfo.start();
+        cons.innerHTML="Synth started";
+        cons.style.color="#107b13";
+        
+        //disable start / enable stop buttons as we only want one synth going at a time
+        btnStart.disabled = true;
+        btnStop.disabled = false;
+        mainCanvas.focus();
+    }
+    
+    function stopIt(){
+        osc.stop();
+        lfo.stop();
+        cons.innerHTML="Synth stopped";
+        cons.style.color="#e32d28";    
+        
+        //disable stop / enable start buttons as we only want to get a synth going
+        btnStart.disabled = false;
+        btnStop.disabled = true;
+        pos.innerHTML="";   //clear display values
+    }
+    
+    btnStart.addEventListener('click', startIt);
+    btnStop.addEventListener('click', stopIt);
+
+
+</script>
+</html>
